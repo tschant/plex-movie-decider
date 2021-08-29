@@ -7,7 +7,7 @@ export type Movie = {
 	summary: string,
 	studio: string,
 	year: string,
-	genres: Array<String>
+	genres: Array<string>
 }
 
 

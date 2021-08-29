@@ -1,21 +1,32 @@
 import { InferGetServerSidePropsType } from 'next'
 import Head from 'next/head'
+import { Box, Container, Heading } from '@chakra-ui/layout'
+import { Button, Stack } from '@chakra-ui/react'
 import styles from '../styles/Home.module.css'
 import PlexMovies from './components/PlexMovies'
 import plex from '../lib/plex-api'
 
 import type {Movies} from '../types/movies'
+import {useState} from 'react'
 
+const PAGE_SIZE = 24
 export const getServerSideProps = async () => {
-	let movies: Movies = await plex.fetchAllMovies()
+	const movies: Movies = await plex.fetchAllMovies() || []
 	return {
 		props: {
-			movies
+			movies,
 		}
 	}
 }
 
 function Home({movies}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+	const totalPages = movies ? Math.ceil(movies.length / PAGE_SIZE) : 0
+	const [page, setPage] = useState(0)
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
+
 	return (
 		<div className={styles.container}>
 			<Head>
@@ -24,13 +35,16 @@ function Home({movies}: InferGetServerSidePropsType<typeof getServerSideProps>) 
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
-			<main className={styles.main}>
-				<h1 className={styles.title}>
-					All Movies!
-				</h1>
+			<Heading as="h1"> All Movies! </Heading>
+			<Container maxW="container.xl" overflow="hidden">
+				<Box maxH="calc(100% - 10px)" overflowY="scroll">
+					<PlexMovies movies={movies.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)}></PlexMovies>
+				</Box>
+			</Container>
 
-				<PlexMovies movies={movies}></PlexMovies>
-			</main>
+			<Stack direction="row" overflowX="scroll" overflowY="hidden" h="20" maxW="100%" alignItems="center">
+				{[...Array(totalPages)].map((_, i) => (<Button size="xs" onClick={() => handlePageChange(i)}>{i}</Button>))}
+			</Stack>
 
 			<footer className={styles.footer}>
 				<a href="/">Home</a>

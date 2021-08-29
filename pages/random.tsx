@@ -1,9 +1,11 @@
 import { InferGetServerSidePropsType } from 'next'
 import Head from 'next/head'
-import Image from 'next/image'
+import { Badge, Container, Heading, Image, Stack, Text } from '@chakra-ui/react'
 import styles from '../styles/Home.module.css'
 import plex from '../lib/plex-api'
 
+import GenresBadges from './components/GenresBadges'
+import MovieImage from './components/MovieImage'
 import type {Movie} from '../types/movies'
 
 export const getServerSideProps = async () => {
@@ -19,7 +21,6 @@ export const getServerSideProps = async () => {
 function Random({movie}: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	if (!movie) return <div>Failed to get Movie</div>
 
-	const imageSrc = `${process.env.NEXT_PUBLIC_URL_PREFIX}${movie.thumb}?X-Plex-Token=${process.env.NEXT_PUBLIC_PLEX_TOKEN}`
 	return (
 		<div className={styles.container}>
 			<Head>
@@ -27,22 +28,20 @@ function Random({movie}: InferGetServerSidePropsType<typeof getServerSideProps>)
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
-			<main className={styles.main}>
-				<h1 className={styles.title}>
+			<Container maxW="container.md" overflow="hidden" centerContent h="100%">
+				<Heading as="h1">
 					{movie.title}
-				</h1>
-				<div>
-					<span className={styles.badge}>{movie.year}</span>
-					<span className={styles.badge}>{movie.studio}</span>
-				</div>
-				<Image src={imageSrc} alt="movie thumbnail" width="200" height="350"></Image>
+				</Heading>
 
-				<div className={styles.description}>{movie.summary}</div>
+				<Stack direction="row">
+					<Badge colorScheme="green">{movie.year}</Badge>
+					<Badge colorScheme="blue">{movie.studio}</Badge>
+					<GenresBadges genres={movie.genres}></GenresBadges>
+				</Stack>
+				<MovieImage thumb={movie.thumb}></MovieImage>
 
-				<div className={styles.grid}>
-					{movie.genres.map(genre => (<div className={styles.badge} key={genre}>{genre}</div>))}
-				</div>
-			</main>
+				<Text>{movie.summary}</Text>
+			</Container>
 
 			<footer className={styles.footer}>
 				<a href="/">Home</a>
